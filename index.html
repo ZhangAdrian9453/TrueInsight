@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZhenMing">
+    <meta name="theme-color" content="#1f2937">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <title>ZhenMing - I Ching Divination</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="/src/main.js"></script>
+</head>
+<body class="relative bg-gray-50 text-gray-900 font-sans min-h-screen" style="display: flex; justify-content: center;">
+    <!-- Background pattern -->
+    <div class="absolute inset-0 z-0 pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, rgba(156, 163, 175, 0.15) 1px, transparent 0); background-size: 16px 16px;"></div>
+
+    <!-- App container -->
+    <div class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col pb-20 overflow-hidden" style="margin-left: auto !important; margin-right: auto !important;">
+        <!-- Navigation header - always visible -->
+        <header id="nav-header" class="flex py-4 px-6 justify-between items-center z-20">
+            <button id="back-button" aria-label="返回" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors bg-gray-50 border border-gray-300" style="visibility: hidden;" onclick="handleBackClick()">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <h2 id="screen-title" class="text-lg font-medium font-geist-mono"></h2>
+            <div class="w-10"></div> <!-- Placeholder for alignment -->
+        </header>
+
+        <!-- Screens container - only one will be visible at a time -->
+        <div id="screens-container" class="flex-grow relative">
+            <!-- Login Screen -->
+            <section id="login-screen" class="fixed inset-0 flex flex-col p-6 transition-opacity duration-500 opacity-0 pointer-events-none z-50 bg-gray-50" style="display: none;">
+                <!-- 登录页顶部导航 -->
+                <div class="flex items-center justify-between mb-6">
+                    <button id="login-back-btn" onclick="handleBackClick()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors bg-white border border-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <h2 class="text-lg font-medium" data-i18n="login.login">登录</h2>
+                    <div class="w-10"></div>
+                </div>
+                <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2" data-i18n="login.welcome">欢迎来到贞明</h2>
+                        <p class="text-sm text-gray-500" data-i18n="login.desc">登录后开始您的易经占卜之旅</p>
+                    </div>
+                    
+                    <!-- 邮箱登录 / 注册 -->
+                    <div class="glass-card p-6 mb-4">
+                        <!-- 登录 / 注册 Tab -->
+                        <div class="flex border-b border-gray-200 mb-5">
+                            <button id="tab-login-btn"
+                                class="flex-1 pb-2 text-sm font-medium border-b-2 border-gray-900 text-gray-900 transition-colors"
+                                onclick="window.switchAuthTab('login')">登录</button>
+                            <button id="tab-register-btn"
+                                class="flex-1 pb-2 text-sm font-medium border-b-2 border-transparent text-gray-400 transition-colors"
+                                onclick="window.switchAuthTab('register')">注册</button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2">邮箱</label>
+                                <input type="email" id="login-email" placeholder="your@email.com"
+                                    autocomplete="email"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-2">密码</label>
+                                <input type="password" id="login-password" placeholder="请输入密码"
+                                    autocomplete="current-password"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <button id="auth-submit-btn"
+                                class="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+                                登录
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-6">
+                        <p class="text-xs text-gray-500">登录即表示您同意我们的服务条款和隐私政策</p>
+                    </div>
+                </div>
+            </section>
+        
+            <!-- Welcome Screen -->
+            <section id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-500 opacity-100 z-10" style="display: flex;">
+                <div class="flex flex-col items-center welcome-hero">
+                    <!-- Logo -->
+                    <div class="w-36 h-36 relative">
+                        <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-animation">
+                            <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(-30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+                            <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+                            <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(90 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+                            <circle cx="60" cy="60" r="6" fill="#1A1A1A" class="logo-center"/>
+                        </svg>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="text-3xl text-center text-gray-900 title-animation mt-8" style="font-family: 'Ma Shan Zheng', cursive; letter-spacing: 0.2em;" data-i18n="app.title">万事贞明</h1>
+
+                    <!-- Divider -->
+                    <div class="welcome-divider subtitle-animation mt-5 mb-4"></div>
+
+                    <!-- Subtitle -->
+                    <p class="text-sm text-center text-gray-400 subtitle-animation tracking-widest" style="font-family: 'LXGW WenKai', cursive;" data-i18n="app.subtitle">日月之道，贞明者也</p>
+                </div>
+
+                <!-- CTA Button -->
+                <button id="start-divination-btn" class="start-button mt-8 border border-gray-300 text-gray-700 bg-white px-14 py-3 rounded-full hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-500" style="font-family: 'LXGW WenKai', cursive; letter-spacing: 0.2em; font-size: 15px;">
+                    <span data-i18n="home.startDivination">观象知己</span>
+                </button>
+                
+                <div class="recent-activity mt-16 w-full max-w-xs opacity-0 transform translate-y-4 transition-all duration-700 delay-1000" id="recent-activity">
+                    <h3 class="text-sm font-medium text-gray-500 mb-3" data-i18n="home.recentActivity">最近活动</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                            <div class="text-sm font-medium">事业发展方向</div>
+                            <div class="text-xs text-gray-500 mt-1">乾为天 - 天行健，君子以自强不息</div>
+                            <div class="text-xs text-gray-400 mt-2">示例记录</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                            <div class="text-sm font-medium">近期健康状况</div>
+                            <div class="text-xs text-gray-500 mt-1">坤为地 - 地势坤，君子以厚德载物</div>
+                            <div class="text-xs text-gray-400 mt-2">示例记录</div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Divination Input Screen -->
+            <section id="divination-input-screen" class="absolute inset-0 flex flex-col p-6 overflow-y-auto scrollbar-hide transition-opacity duration-500 opacity-0 pointer-events-none z-10" style="display: none;">
+                <div class="mb-6">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2" data-i18n="input.method">起卦方式</h3>
+                    <div class="flex space-x-4">
+                        <button class="method-btn selected px-4 py-2 rounded-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-900 hover:bg-gray-200 transition-colors" data-method="manual" data-i18n="input.manual">
+                            手动输入
+                        </button>
+                        <button class="method-btn px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors" data-method="time" data-i18n="input.time">
+                            时间起卦
+                        </button>
+                        <button class="method-btn px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors" data-method="number" data-i18n="input.number">
+                            数字起卦
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 手动输入摇卦说明 -->
+                <div id="manual-description" class="mb-4">
+                    <p class="text-xs text-gray-500 leading-relaxed" data-i18n="input.manualDesc">
+                        <span class="font-medium">摇卦说明：</span>铜钱摇卦时，字面为阴，无字面为阳；现代钱币摇卦时，数字面为阳，图案面为阴
+                    </p>
+                </div>
+
+                <!-- 数字起卦说明 -->
+                <div id="number-description" class="mb-4" style="display:none;">
+                    <p class="text-xs text-gray-500 leading-relaxed" data-i18n="input.numberDesc">
+                        <span class="font-medium">数字起卦说明：</span>按照心里想到的数字输入，每组最多3个数字，共6组对应六爻
+                    </p>
+                </div>
+
+                <!-- 时间起卦说明 -->
+                <div id="time-description" class="mb-4" style="display:none;">
+                    <p class="text-xs text-gray-500 leading-relaxed" data-i18n="input.timeDesc">
+                        <span class="font-medium">时间起卦说明：</span>时间起卦以问卦人的问卦日期和时间为基础，若为公历则需换算成阴历。按传统规则生成六爻卦象
+                    </p>
+                </div>
+
+                <!-- 手动输入的时间选择器 -->
+                <div id="manual-time-section" class="mb-6 glass-card">
+                    <div class="flex items-center">
+                        <h3 class="text-base font-medium text-gray-800 flex-shrink-0" data-i18n="input.divinationTime">起卦时间</h3>
+                        <div class="flex-1 flex items-center justify-center">
+                            <button id="manual-datetime-display" class="font-medium text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">2025-10-10 17:00</button>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-shrink-0">
+                            <button id="manual-refresh-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="使用当前时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                            </button>
+                            <button id="manual-datetime-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="选择时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 手动（投币）起卦 -->
+                <div id="manual-section" class="yarrow-input mb-6 glass-card">
+                    <h3 class="text-base font-medium text-gray-800 mb-4" data-i18n="input.selectYao">选择六爻 (从上往下：初爻→上爻)</h3>
+                    <div class="space-y-4">
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line1">初爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="1" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="1" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="1" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line2">二爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="2" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="2" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="2" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line3">三爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="3" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="3" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="3" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line4">四爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="4" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="4" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="4" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line5">五爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="5" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="5" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="5" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="yarrow-line py-3">
+                            <div class="flex items-center">
+                                <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line6">上爻</span>
+                                <div class="flex space-x-3 flex-1">
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="6" data-coin="1" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="6" data-coin="2" data-state="yang">阳</button>
+                                    <button class="coin-btn flex-1 h-9 text-sm border border-gray-300 rounded hover:bg-gray-50 font-medium transition-all" data-line="6" data-coin="3" data-state="yang">阳</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数字起卦的时间选择器 -->
+                <div id="number-time-section" class="mb-6 glass-card" style="display:none;">
+                    <div class="flex items-center">
+                        <h3 class="text-base font-medium text-gray-800 flex-shrink-0" data-i18n="input.divinationTime">起卦时间</h3>
+                        <div class="flex-1 flex items-center justify-center">
+                            <button id="number-datetime-display" class="font-medium text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">2025-10-10 17:00</button>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-shrink-0">
+                            <button id="number-refresh-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="使用当前时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                            </button>
+                            <button id="number-datetime-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="选择时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数字起卦 -->
+                <div id="number-section" class="mb-6 glass-card" style="display:none;">
+                    <h3 class="text-base font-medium text-gray-800 mb-2" data-i18n="input.numberDivination">数字起卦</h3>
+                    <p class="text-xs text-gray-500 mb-4" data-i18n="input.numberHint">数字起卦基于数字的阴阳属性，起卦方法：输入6组三位数（每位数范围0-9）。</p>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line1">初爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-1" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line2">二爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-2" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line3">三爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-3" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line4">四爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-4" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line5">五爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-5" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-base font-medium text-gray-800 w-16" data-i18n="input.line6">上爻</span>
+                            <input class="num-line-input flex-1 mr-4 px-3 py-2 border rounded-md" id="num-line-6" maxlength="3" inputmode="numeric" pattern="[0-9]{1,3}" placeholder="最多3位数字" data-i18n-placeholder="input.maxDigits">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间起卦 -->
+                <div id="time-section" class="mb-6 glass-card" style="display:none;">
+                    <div class="flex items-center">
+                        <h3 class="text-base font-medium text-gray-800 flex-shrink-0" data-i18n="input.timeDivination">时间起卦</h3>
+                        <div class="flex-1 flex items-center justify-center">
+                            <button id="datetime-display" class="font-medium text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">2025-10-10 17:00</button>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-shrink-0">
+                            <button id="refresh-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="使用当前时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+                            </button>
+                            <button id="datetime-btn" class="p-1.5 rounded-full hover:bg-gray-100 transition-colors" title="选择时间">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日期时间选择器弹窗 -->
+                <div id="time-picker-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+                    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900" data-i18n="picker.title">选择日期时间</h3>
+                            <button id="close-picker" class="p-1 rounded-full hover:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- 日历部分 -->
+                        <div class="calendar-container mb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <button id="prev-month" class="p-2 hover:bg-gray-100 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <h4 id="calendar-month-year" class="font-medium text-gray-900"></h4>
+                                <button id="next-month" class="p-2 hover:bg-gray-100 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 mb-2">
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.sun">日</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.mon">一</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.tue">二</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.wed">三</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.thu">四</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.fri">五</div>
+                                <div class="text-xs text-gray-500 text-center py-2" data-i18n="picker.sat">六</div>
+                            </div>
+                            <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
+                        </div>
+                        
+                        <!-- 时间选择部分 -->
+                        <div class="time-container border-t pt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-medium text-gray-700" data-i18n="picker.time">时间</span>
+                                <div id="time-display" class="text-lg font-mono bg-gray-100 px-3 py-1 rounded">00:00</div>
+                            </div>
+                            <div class="time-picker-combined">
+                                <label class="text-xs text-gray-500 block mb-1" data-i18n="picker.timeSelect">时间选择</label>
+                                <div class="flex border rounded h-24 overflow-hidden">
+                                    <div class="flex-1 overflow-y-auto border-r scrollbar-hide">
+                                        <div id="hour-options" class="py-1"></div>
+                                    </div>
+                                    <div class="w-px bg-gray-200"></div>
+                                    <div class="flex-1 overflow-y-auto scrollbar-hide">
+                                        <div id="minute-options" class="py-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button id="picker-cancel" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded" data-i18n="common.cancel">取消</button>
+                            <button id="picker-confirm" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" data-i18n="common.confirm">确认</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6 glass-card">
+                    <label for="question" class="block text-base font-medium text-gray-800 mb-3" data-i18n="input.question">您的问题</label>
+                    <input id="question" type="text" maxlength="200" placeholder="请输入您想解答的问题..." data-i18n-placeholder="input.questionPlaceholder" class="w-full px-4 py-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base">
+                </div>
+
+                <button id="analyze-btn" class="w-full py-4 bg-gray-900 text-white rounded-lg font-medium text-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed" disabled data-i18n="input.analyze">
+                    万事贞明
+                </button>
+            </section>
+
+            <!-- Analysis Screen -->
+            <section id="analysis-screen" class="absolute inset-0 overflow-y-auto scrollbar-hide transition-opacity duration-500 opacity-0 pointer-events-none z-10">
+                <div class="p-6">
+                <div class="analysis-container glass-card mb-4">
+                    <!-- 问题显示 -->
+                    <div class="question-display mb-4 px-4 pt-4">
+                        <p id="question-display" class="text-gray-800 pb-3 border-b border-gray-200 font-medium"></p>
+                    </div>
+                    
+                    <!-- 时间信息 -->
+                    <div class="time-info mb-4 px-4">
+                        <div class="text-xs text-gray-600">
+                            <div id="divination-time">起卦时间：2025年10月13日 09:36</div>
+                            <div id="lunar-info" class="flex gap-8 text-sm font-bold text-gray-800 mt-2 mb-2">
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 神煞信息 -->
+                    <div class="spirits-info mb-4 px-4">
+                        <div class="text-xs text-gray-600">
+                            <div id="spirits-row1" class="mb-1"></div>
+                            <div id="spirits-row2"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 卦象对比显示 -->
+                    <div class="hexagram-comparison mb-4 px-4">
+                        <div class="flex justify-center items-end space-x-8">
+                            <!-- 本卦 -->
+                            <div class="text-center">
+                                <div class="text-lg font-bold mb-2 h-7" id="original-name">地水师</div>
+                                <div id="original-hexagram" class="flex flex-col space-y-1 items-center">
+                                    <!-- 测试阴阳爻 -->
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; display: flex; justify-content: space-between; margin: 0 auto;">
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                        </div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; display: flex; justify-content: space-between; margin: 0 auto;">
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                        </div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; display: flex; justify-content: space-between; margin: 0 auto;">
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 箭头 -->
+                            <div class="flex items-center justify-center" style="margin-bottom: 20px;">
+                                <div class="hexagram-arrow">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- 变卦 -->
+                            <div class="text-center">
+                                <div class="text-lg font-bold mb-2 h-7" id="changed-name">震为雷</div>
+                                <div id="changed-hexagram" class="flex flex-col space-y-1 items-center">
+                                    <!-- 测试阴阳爻 -->
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; display: flex; justify-content: space-between; margin: 0 auto;">
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                        </div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; display: flex; justify-content: space-between; margin: 0 auto;">
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                            <span style="height: 8px; width: 26px; background-color: #1A1A1A; border-radius: 4px;"></span>
+                                        </div>
+                                    </div>
+                                    <div class="hexagram-line">
+                                        <div style="height: 8px; width: 60px; background-color: #1A1A1A; border-radius: 4px; margin: 0 auto;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细爻象表格 -->
+                    <div class="hexagram-details px-4 pb-4">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="text-left py-2" data-i18n="analysis.sixSpirits">六神</th>
+                                        <th class="text-left py-2" data-i18n="analysis.sixRelatives">六亲</th>
+                                        <th class="text-center py-2" data-i18n="analysis.originalHexagram">本卦</th>
+                                        <th class="text-center py-2" data-i18n="analysis.changedHexagram">变卦</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hexagram-table-body">
+                                    <!-- 爻象详情将在这里动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analysis-result glass-card mb-4">
+                    <div class="mb-3 px-4 pt-4 flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900" data-i18n="analysis.title">解卦分析：</h3>
+                        <button id="regenerate-analysis-btn" onclick="regenerateAnalysis()" class="text-xs px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors" data-i18n="analysis.regenerate">
+                            重新分析
+                        </button>
+                    </div>
+                    <div id="loading-analysis" class="flex flex-col items-center justify-center py-10 hidden">
+                        <div class="w-full max-w-sm px-6">
+                            <!-- 旋转图标 -->
+                            <div class="flex justify-center mb-5">
+                                <svg class="animate-spin text-gray-400" style="width:32px;height:32px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                </svg>
+                            </div>
+                            <!-- 进度条 -->
+                            <div class="w-full bg-gray-100 rounded-full overflow-hidden" style="height:4px;">
+                                <div id="ai-progress-bar"
+                                     class="bg-gray-700 h-full rounded-full"
+                                     style="width:0%;transition:width 0.6s ease;"></div>
+                            </div>
+                            <!-- 状态文字 -->
+                            <p id="ai-loading-status" class="text-gray-400 text-xs text-center mt-3 tracking-wide">正在起卦…</p>
+                        </div>
+                    </div>
+                    <div id="analysis-result" class="prose prose-sm max-w-none px-4 pb-4">
+                        <!-- Analysis results will be displayed here -->
+                        <p class="text-gray-500" data-i18n="analysis.placeholder">点击"重新分析"按钮开始解卦</p>
+                    </div>
+                </div>
+                
+                <!-- AI配置模态框已隐藏，供后台管理使用 -->
+
+                <div class="feedback-section flex space-x-4 justify-center mb-2">
+                    <button id="feedback-good-btn" class="flex items-center space-x-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 10v12"/>
+                            <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>
+                        </svg>
+                        <span data-i18n="analysis.feedback">解析准确</span>
+                    </button>
+                    
+                    <button id="share-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                            <polyline points="16,6 12,2 8,6"/>
+                            <line x1="12" y1="2" x2="12" y2="15"/>
+                        </svg>
+                        <span data-i18n="analysis.share">分享结果</span>
+                    </button>
+                </div>
+                </div>
+            </section>
+
+            <!-- History Screen -->
+            <section id="history-screen" class="absolute inset-0 flex flex-col p-6 overflow-y-auto scrollbar-hide transition-opacity duration-500 opacity-0 pointer-events-none z-10">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-medium text-gray-900" data-i18n="history.title">解卦历史</h3>
+                        <button onclick="hexagramHistory.clearHistory()" class="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded transition-colors" data-i18n="history.clearAll">
+                            清空记录
+                        </button>
+                    </div>
+                    <div id="history-list" class="space-y-4">
+                        <!-- History items will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Screen -->
+            <section id="profile-screen" class="absolute inset-0 flex flex-col p-6 overflow-y-auto scrollbar-hide transition-opacity duration-500 opacity-0 pointer-events-none z-10">
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-gray-900 mb-6" data-i18n="nav.profile">我的</h3>
+                    
+                    <!-- User Info -->
+                    <div class="glass-card mb-6">
+                        <div class="flex items-center mb-4">
+                            <div id="user-avatar" class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mr-4 overflow-hidden">
+                                <img src="" alt="用户头像" class="w-full h-full object-cover hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 id="username" class="font-medium text-gray-900" data-i18n="profile.defaultName">易学爱好者</h4>
+                                <p class="text-sm text-gray-500" id="divination-count-text">已解卦 <span id="divination-count">0</span> 次</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Menu Items -->
+                    <div class="space-y-3">
+                        <button onclick="showSettingsScreen()" class="w-full glass-card flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-600">
+                                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <span class="text-gray-900" data-i18n="profile.settings">设置</span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="showHelpScreen()" class="w-full glass-card flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-600">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                    <path d="M12 17h.01"/>
+                                </svg>
+                                <span class="text-gray-900" data-i18n="profile.help">帮助与反馈</span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="showAboutPage()" class="w-full glass-card flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-600">
+                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                                </svg>
+                                <span class="text-gray-900" data-i18n="profile.about">关于贞明</span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </button>
+                        
+                        <button onclick="logout()" class="w-full glass-card flex items-center justify-center p-4 hover:bg-red-50 transition-colors border-2 border-red-200">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-red-600">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span class="text-red-600 font-medium" data-i18n="profile.logout">退出登录</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Screen -->
+            <section id="settings-screen" class="absolute inset-0 flex flex-col p-6 transition-opacity duration-500 opacity-0 pointer-events-none z-10 overflow-y-auto scrollbar-hide">
+                <div class="mb-6 pb-10">
+                    <!-- 通用设置 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4" data-i18n="settings.general">通用设置</h4>
+                        <div class="space-y-4">
+                            <!-- 历史保存数量 -->
+                            <div class="glass-card p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-medium text-gray-900" data-i18n="settings.historyLimit">历史保存数量</h5>
+                                        <p class="text-sm text-gray-500" data-i18n="settings.historyLimitDesc">最多保存的历史记录条数</p>
+                                    </div>
+                                    <select id="history-limit-select" onchange="changeHistoryLimit(this.value)" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                        <option value="50" selected data-i18n="settings.records50">50条</option>
+                                        <option value="100" data-i18n="settings.records100">100条</option>
+                                        <option value="200" data-i18n="settings.records200">200条</option>
+                                        <option value="unlimited" data-i18n="common.unlimited">不限制</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 自动保存问题 -->
+                            <div class="glass-card p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-medium text-gray-900" data-i18n="settings.autoSave">自动保存问题</h5>
+                                        <p class="text-sm text-gray-500" data-i18n="settings.autoSaveDesc">是否自动记录占卜问题</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input id="auto-save-question" type="checkbox" onchange="toggleAutoSaveQuestion(this.checked)" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- 语言选择 -->
+                            <div class="glass-card p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h5 class="font-medium text-gray-900" data-i18n="settings.language">语言</h5>
+                                        <p class="text-sm text-gray-500" data-i18n="settings.languageDesc">选择应用语言</p>
+                                    </div>
+                                    <select id="language-select" onchange="window.i18n && window.i18n.setLanguage(this.value)" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                                        <option value="zh">中文</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据管理 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4" data-i18n="settings.dataManagement">数据管理</h4>
+                        <div class="space-y-4">
+                            <!-- 存储统计 -->
+                            <div class="glass-card p-4">
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-gray-900 mb-2" data-i18n="settings.storageStats">存储统计</h5>
+                                    <div id="storage-stats" class="text-sm text-gray-600">
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div><span data-i18n="settings.recordCount">记录数量</span>: <span id="record-count">-</span></div>
+                                            <div><span data-i18n="settings.backupCount">备份数量</span>: <span id="backup-count">-</span></div>
+                                            <div><span data-i18n="settings.storageSize">存储大小</span>: <span id="storage-size">-</span></div>
+                                            <div><span data-i18n="settings.syncStatus">同步状态</span>: <span id="sync-status">-</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onclick="refreshStorageStats()" class="w-full px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600" data-i18n="settings.refreshStats">
+                                    刷新统计
+                                </button>
+                            </div>
+
+                            <!-- 数据备份 -->
+                            <div class="glass-card p-4">
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-gray-900" data-i18n="settings.dataBackup">数据备份</h5>
+                                    <p class="text-sm text-gray-500" data-i18n="settings.dataBackupDesc">创建数据备份以防止数据丢失</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="createManualBackup()" class="flex-1 px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600" data-i18n="settings.createBackup">
+                                        创建备份
+                                    </button>
+                                    <button onclick="showBackupList()" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50" data-i18n="settings.viewBackups">
+                                        查看备份
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 数据同步 -->
+                            <div class="glass-card p-4">
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-gray-900" data-i18n="settings.cloudSync">云端同步</h5>
+                                    <p class="text-sm text-gray-500" data-i18n="settings.cloudSyncDesc">同步数据到云端，防止数据丢失</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="syncToCloud()" class="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600" data-i18n="settings.upload">
+                                        上传同步
+                                    </button>
+                                    <button onclick="syncFromCloud()" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50" data-i18n="settings.download">
+                                        下载同步
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 数据导出导入 -->
+                            <div class="glass-card p-4">
+                                <div class="mb-3">
+                                    <h5 class="font-medium text-gray-900" data-i18n="settings.exportImport">数据导出/导入</h5>
+                                    <p class="text-sm text-gray-500" data-i18n="settings.exportImportDesc">导出数据到文件或从文件导入</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="exportData()" class="flex-1 px-3 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600" data-i18n="settings.export">
+                                        导出数据
+                                    </button>
+                                    <button onclick="importData()" class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50" data-i18n="settings.import">
+                                        导入数据
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 关于 -->
+                    <div class="glass-card p-4">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-400 mb-3">贞明 v1.0</p>
+                            <!-- 贞明 Logo -->
+                            <div class="flex justify-center">
+                                <div class="w-16 h-16">
+                                    <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(-30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                        <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                        <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(90 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                        <circle cx="60" cy="60" r="6" fill="#1A1A1A"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Screen -->
+            <section id="about-screen" class="absolute inset-0 flex flex-col p-6 overflow-y-auto scrollbar-hide transition-opacity duration-500 opacity-0 pointer-events-none z-10">
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-gray-900 mb-6">关于贞明</h3>
+
+                    <!-- 免责声明 -->
+                    <div class="border border-amber-300 bg-amber-50 rounded-xl p-4 mb-6">
+                        <p class="text-sm font-semibold text-amber-800 mb-1">⚠ Disclaimer</p>
+                        <p class="text-sm text-amber-700 leading-relaxed">
+                            ZhenMing is provided <strong>for entertainment purposes only</strong>.
+                            The divination results are not intended as professional advice of any kind —
+                            financial, legal, medical, or otherwise. Do not make important life decisions
+                            based solely on the content generated by this app.
+                        </p>
+                    </div>
+
+                    <!-- 应用介绍 -->
+                    <div class="glass-card p-6 mb-6">
+                        <div class="text-center mb-4">
+                            <div class="w-20 h-20 mx-auto mb-3">
+                                <svg width="100%" height="100%" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(-30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                    <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                    <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(90 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none"/>
+                                    <circle cx="60" cy="60" r="6" fill="#1A1A1A"/>
+                                </svg>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-900">贞明 · 六爻解卦</h4>
+                            <p class="text-sm text-gray-500 mt-1">v1.0.0</p>
+                        </div>
+                        <p class="text-sm text-gray-600 text-center leading-relaxed">
+                            贞明是一款基于传统易学智慧的六爻占卜应用，旨在帮助用户通过易经的指引，洞察人生，把握机遇。
+                        </p>
+                    </div>
+                    
+                    <!-- 六爻解卦基本说明 -->
+                    <div class="glass-card p-6 mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">📖 六爻解卦基本说明</h4>
+                        
+                        <div class="space-y-4 text-sm text-gray-700">
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">什么是六爻</h5>
+                                <p class="leading-relaxed">
+                                    六爻是《周易》占卜的一种重要方法，通过六个爻位的阴阳变化来预测事物的发展趋势。每一爻代表不同的时间和空间层次，从下至上分别为初爻、二爻、三爻、四爻、五爻、上爻。
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">阴阳爻</h5>
+                                <p class="leading-relaxed mb-2">
+                                    • <strong>阳爻（—）</strong>：代表刚健、主动、向上的力量<br>
+                                    • <strong>阴爻（- -）</strong>：代表柔顺、被动、收敛的力量<br>
+                                    • <strong>老阳</strong>：阳爻动，将变为阴爻<br>
+                                    • <strong>老阴</strong>：阴爻动，将变为阳爻
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">起卦方法详解</h5>
+                                
+                                <div class="space-y-3 mt-2">
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <p class="font-medium text-gray-900 mb-2">1. 手动起卦（铜钱/硬币摇卦）</p>
+                                        <p class="text-sm leading-relaxed mb-2">
+                                            <strong>铜钱摇卦：</strong><br>
+                                            • 准备三枚铜钱（古钱币）<br>
+                                            • 字面为阴，无字面为阳<br>
+                                            • 双手合握铜钱，诚心默念问题<br>
+                                            • 摇动后掷到桌上，记录结果<br>
+                                            • 重复六次，从下至上记录（初爻→上爻）
+                                        </p>
+                                        <p class="text-sm leading-relaxed">
+                                            <strong>硬币摇卦：</strong><br>
+                                            • 使用三枚现代硬币（一元、五角等）<br>
+                                            • 有字一面为阳，花纹/图案面为阴<br>
+                                            • 同样诚心默念问题后摇动掷出<br>
+                                            • 连续摇六次，每次专注于问题
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <p class="font-medium text-gray-900 mb-2">2. 时间起卦</p>
+                                        <p class="text-sm leading-relaxed">
+                                            • 选择起卦的具体时间（年月日时）<br>
+                                            • 最好使用农历时间（更符合传统）<br>
+                                            • 系统自动根据时间数理推算卦象<br>
+                                            • 适合在重要时刻或特定时辰起卦<br>
+                                            • 不需要实物工具，时间即数理
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="p-3 bg-gray-50 rounded-lg">
+                                        <p class="font-medium text-gray-900 mb-2">3. 数字起卦</p>
+                                        <p class="text-sm leading-relaxed">
+                                            • 心中默念问题，想到什么数字就输入<br>
+                                            • 每组可输入1-3个数字<br>
+                                            • 共需输入6组数字，对应六爻<br>
+                                            • 凭直觉输入，不要刻意思考<br>
+                                            • 系统根据数字的奇偶性生成阴阳爻
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">本卦与变卦</h5>
+                                <p class="leading-relaxed">
+                                    • <strong>本卦：</strong>当前事物的现状和基本情况<br>
+                                    • <strong>变卦：</strong>事物未来的发展趋势和变化方向<br>
+                                    • <strong>动爻：</strong>影响事态变化的关键因素
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">六神与六亲</h5>
+                                <p class="leading-relaxed">
+                                    • <strong>六神：</strong>青龙、朱雀、勾陈、腾蛇、白虎、玄武，代表不同的吉凶属性<br>
+                                    • <strong>六亲：</strong>父母、兄弟、子孙、妻财、官鬼，代表与问事者的关系
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h5 class="font-medium text-gray-900 mb-2">如何解卦</h5>
+                                <ol class="list-decimal list-inside space-y-1 leading-relaxed">
+                                    <li>明确问题，诚心起卦</li>
+                                    <li>观察本卦和变卦的卦象</li>
+                                    <li>分析动爻的位置和含义</li>
+                                    <li>结合六神六亲综合判断</li>
+                                    <li>参考AI分析获得更深入的见解</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 使用建议 -->
+                    <div class="glass-card p-6 mb-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">📝 使用建议</h4>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <p>• 保持虔诚之心，专注于问题本身</p>
+                            <p>• 问题要具体明确，避免模糊不清</p>
+                            <p>• 同一问题不宜反复占卜</p>
+                            <p>• 易经是指引而非决定，最终选择权在自己</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 联系方式 -->
+                    <div class="glass-card p-6 text-center">
+                        <p class="text-xs text-gray-400">© 2025 贞明 · 六爻解卦</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Help & Feedback Screen -->
+            <section id="help-screen" class="absolute inset-0 flex flex-col p-6 transition-opacity duration-500 opacity-0 pointer-events-none z-10 overflow-y-auto scrollbar-hide">
+                <div class="mb-6 pb-10">
+                    <!-- 常见问题 -->
+                    <div class="glass-card p-6 mb-4">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">❓ 常见问题</h4>
+                        <div class="space-y-4 text-sm text-gray-700">
+                            <div class="border-b border-gray-100 pb-3">
+                                <p class="font-medium text-gray-900 mb-1">起卦没有反应怎么办？</p>
+                                <p class="leading-relaxed text-gray-600">请确保每一爻都已正确选择阴阳状态后再点击"起卦"按钮。若使用时间起卦或数字起卦，检查输入是否完整。</p>
+                            </div>
+                            <div class="border-b border-gray-100 pb-3">
+                                <p class="font-medium text-gray-900 mb-1">AI 解卦分析一直转圈？</p>
+                                <p class="leading-relaxed text-gray-600">AI 分析需要调用后端服务，请确保网络连接正常。若长时间无响应，可刷新页面重试，或在设置中检查 AI 服务配置。</p>
+                            </div>
+                            <div class="border-b border-gray-100 pb-3">
+                                <p class="font-medium text-gray-900 mb-1">历史记录如何保存？</p>
+                                <p class="leading-relaxed text-gray-600">历史记录默认保存在本地设备中。可在"设置 → 数据管理"中创建备份，防止数据丢失。</p>
+                            </div>
+                            <div class="border-b border-gray-100 pb-3">
+                                <p class="font-medium text-gray-900 mb-1">同一问题可以多次占卜吗？</p>
+                                <p class="leading-relaxed text-gray-600">传统易学不建议同一问题反复占卜，否则卦象会失去参考意义。建议同一事项隔一段时间或情况有明显变化后再行占问。</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900 mb-1">如何理解动爻？</p>
+                                <p class="leading-relaxed text-gray-600">动爻（老阳 ○ 或老阴 ×）是卦中变化的关键，代表事件的主要驱动力。本卦通过动爻变化形成变卦，两者结合才能看清事物的来龙去脉。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 使用技巧 -->
+                    <div class="glass-card p-6 mb-4">
+                        <h4 class="text-base font-medium text-gray-900 mb-4">💡 使用技巧</h4>
+                        <div class="space-y-2 text-sm text-gray-600 leading-relaxed">
+                            <p>• <strong class="text-gray-800">问题要聚焦</strong>：每次只问一件具体的事，含糊的问题会导致卦象难以解读</p>
+                            <p>• <strong class="text-gray-800">诚心为要</strong>：起卦前静心片刻，清晰默念所测之事，心诚则灵</p>
+                            <p>• <strong class="text-gray-800">结合实际</strong>：AI 解析是辅助工具，最终决策需结合自身实际情况判断</p>
+                            <p>• <strong class="text-gray-800">记录感悟</strong>：占卜后记录下自己的思考，事后对照卦象有助于提升理解</p>
+                            <p>• <strong class="text-gray-800">顺应而非依赖</strong>：易经是指引方向的罗盘，不是替代思考的工具</p>
+                        </div>
+                    </div>
+
+                    <!-- 反馈建议 -->
+                    <div class="glass-card p-6 mb-4">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">📬 反馈与建议</h4>
+                        <p class="text-sm text-gray-600 mb-4 leading-relaxed">如果你在使用中遇到问题，或有功能改进建议，欢迎通过以下方式联系我们：</p>
+                        <div class="space-y-3">
+                            <!-- 邮件联系（可点击） -->
+                            <a href="mailto:feedback@zhenming.app" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-500 flex-shrink-0">
+                                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-500">电子邮件</p>
+                                    <p class="text-sm text-gray-800 font-medium">feedback@zhenming.app</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                                    <path d="m9 18 6-6-6-6"/>
+                                </svg>
+                            </a>
+                            <!-- 在线反馈（展开表单） -->
+                            <button onclick="toggleFeedbackForm()" class="w-full flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3 text-gray-500 flex-shrink-0">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <div class="flex-1 text-left">
+                                    <p class="text-xs text-gray-500">问题反馈</p>
+                                    <p class="text-sm text-gray-800 font-medium">在线提交问题报告</p>
+                                </div>
+                                <svg id="feedback-form-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 transition-transform duration-200">
+                                    <path d="m9 18 6-6-6-6"/>
+                                </svg>
+                            </button>
+                            <!-- 内联反馈表单 -->
+                            <div id="feedback-form-container" class="hidden">
+                                <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-2">反馈类型</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button class="feedback-type-btn px-3 py-1 text-xs rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-colors" data-type="bug" onclick="selectFeedbackType(this)">🐛 问题报告</button>
+                                            <button class="feedback-type-btn px-3 py-1 text-xs rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-colors" data-type="feature" onclick="selectFeedbackType(this)">💡 功能建议</button>
+                                            <button class="feedback-type-btn px-3 py-1 text-xs rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-colors" data-type="other" onclick="selectFeedbackType(this)">💬 其他</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 mb-2">详细描述</p>
+                                        <textarea id="feedback-text" rows="4" placeholder="请描述您遇到的问题或改进建议..." class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent resize-none bg-white"></textarea>
+                                    </div>
+                                    <button onclick="submitFeedback()" class="w-full py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors font-medium">提交反馈</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 版本信息 -->
+                    <div class="glass-card p-4 text-center">
+                        <p class="text-xs text-gray-400">贞明 · 六爻解卦 &nbsp;v1.0.0</p>
+                        <p class="text-xs text-gray-400 mt-1">© 2025 贞明</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Share Modal -->
+            <div id="share-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 opacity-0 pointer-events-none">
+                <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4 transform transition-transform duration-300 scale-95">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900" data-i18n="share.title">分享解卦结果</h3>
+                        <button id="close-share-modal" class="p-1 rounded-full hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <button class="w-full py-2 px-3 border border-gray-300 rounded-md flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <span data-i18n="share.wechat">分享至微信</span>
+                        </button>
+                        <button class="w-full py-2 px-3 border border-gray-300 rounded-md flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                            <span data-i18n="share.moments">分享至朋友圈</span>
+                        </button>
+                        <button id="copy-result" class="w-full py-2 px-3 border border-gray-300 rounded-md flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span data-i18n="share.copy">复制结果</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav role="navigation" aria-label="主导航" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20">
+            <div class="w-full max-w-md mx-auto flex justify-around items-center py-2 px-4">
+                <button id="nav-home" aria-label="首页" class="nav-item active flex flex-col items-center py-2 px-3 rounded-lg transition-colors">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span class="text-xs" data-i18n="nav.home">首页</span>
+                </button>
+
+                <button id="nav-divination" aria-label="起卦" class="nav-item flex flex-col items-center py-2 px-3 rounded-lg transition-colors">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                        <path d="M5 3v4"/>
+                        <path d="M3 5h4"/>
+                        <path d="M19 17v4"/>
+                        <path d="M17 19h4"/>
+                    </svg>
+                    <span class="text-xs" data-i18n="nav.divination">起卦</span>
+                </button>
+
+                <button id="nav-history" aria-label="历史" class="nav-item flex flex-col items-center py-2 px-3 rounded-lg transition-colors">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                        <path d="M12 7v5l4 2"/>
+                    </svg>
+                    <span class="text-xs" data-i18n="nav.history">历史</span>
+                </button>
+
+                <button id="nav-profile" aria-label="我的" class="nav-item flex flex-col items-center py-2 px-3 rounded-lg transition-colors">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="text-xs" data-i18n="nav.profile">我的</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Connect scripts -->
+    <script>
+        // 添加全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            console.error('Error details:', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno
+            });
+        });
+        
+        // 添加未处理的Promise错误处理
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+    </script>
+    <!-- 确认弹窗 -->
+    <div id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 mx-4 max-w-sm w-full">
+            <h3 id="confirm-title" class="text-lg font-medium mb-4" data-i18n="confirm.title">确认操作</h3>
+            <p id="confirm-message" class="text-gray-600 mb-6" data-i18n="confirm.message">确定要执行此操作吗？</p>
+            <div class="flex space-x-3">
+                <button id="confirm-cancel" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50" data-i18n="common.cancel">
+                    取消
+                </button>
+                <button id="confirm-ok" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600" data-i18n="common.confirm">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI配置模态框 -->
+    <!-- AI配置已移至后端 server/.env -->
+
+    <!-- Disable pinch zooming -->
+    <script>
+        window.addEventListener("wheel", (e) => {
+            const isPinching = e.ctrlKey
+            if(isPinching) e.preventDefault()
+        }, { passive: false })
+    </script>
+</body>
+</html>

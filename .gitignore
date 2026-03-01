@@ -1,0 +1,31 @@
+node_modules/
+dist/
+
+# Environment files
+server/.env
+.env.local
+.env.*.local
+
+# Claude Code
+.claude/
+
+# Temp / misc
+*.png
+核心代码汇总.txt
+
+# Capacitor native projects
+ios/
+android/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

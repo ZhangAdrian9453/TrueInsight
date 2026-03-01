@@ -1,0 +1,11 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Atom/Orbital Logo - 3 elliptical orbits with center nucleus -->
+  <!-- Orbit 1: tilted -30deg -->
+  <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(-30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+  <!-- Orbit 2: tilted 30deg -->
+  <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(30 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+  <!-- Orbit 3: tilted 90deg (vertical) -->
+  <ellipse cx="60" cy="60" rx="52" ry="20" transform="rotate(90 60 60)" stroke="#1A1A1A" stroke-width="5.5" fill="none" class="logo-orbit"/>
+  <!-- Center nucleus -->
+  <circle cx="60" cy="60" r="6" fill="#1A1A1A" class="logo-center"/>
+</svg>
