@@ -182,6 +182,39 @@ const translations = {
     'common.error': '出错了',
     'common.success': '成功',
     'common.unlimited': '不限制',
+
+    // Delete Account
+    'profile.deleteAccount': '删除账号',
+    'profile.deleteAccountConfirm': '此操作将永久删除您的账号及所有数据，且无法撤销。确定继续吗？',
+    'profile.deleteAccountConfirm2': '最后确认：您的账号和所有占卜历史将被永久删除。',
+    'profile.deleteAccountRelogin': '出于安全考虑，请先退出登录并重新登录，然后再删除账号。',
+    'profile.deleteAccountSuccess': '账号已删除',
+
+    // About page
+    'about.appName': '贞明 · 六爻解卦',
+    'about.appDesc': '贞明是一款基于传统易学智慧的六爻占卜应用，旨在帮助用户通过易经的指引，洞察人生，把握机遇。',
+    'about.guideTitle': '📖 六爻解卦基本说明',
+    'about.whatTitle': '什么是六爻',
+    'about.whatContent': '六爻是《周易》占卜的一种重要方法，通过六个爻位的阴阳变化来预测事物的发展趋势。每一爻代表不同的时间和空间层次，从下至上分别为初爻、二爻、三爻、四爻、五爻、上爻。',
+    'about.linesTitle': '阴阳爻',
+    'about.linesContent': '• <strong>阳爻（—）</strong>：代表刚健、主动、向上的力量<br>• <strong>阴爻（- -）</strong>：代表柔顺、被动、收敛的力量<br>• <strong>老阳</strong>：阳爻动，将变为阴爻<br>• <strong>老阴</strong>：阴爻动，将变为阳爻',
+    'about.methodsTitle': '起卦方法详解',
+    'about.method1Title': '1. 手动起卦（铜钱/硬币摇卦）',
+    'about.method1CoinContent': '<strong>铜钱摇卦：</strong><br>• 准备三枚铜钱（古钱币）<br>• 字面为阴，无字面为阳<br>• 双手合握铜钱，诚心默念问题<br>• 摇动后掷到桌上，记录结果<br>• 重复六次，从下至上记录（初爻→上爻）',
+    'about.method1ModernContent': '<strong>硬币摇卦：</strong><br>• 使用三枚现代硬币（一元、五角等）<br>• 有字一面为阳，花纹/图案面为阴<br>• 同样诚心默念问题后摇动掷出<br>• 连续摇六次，每次专注于问题',
+    'about.method2Title': '2. 时间起卦',
+    'about.method2Content': '• 选择起卦的具体时间（年月日时）<br>• 最好使用农历时间（更符合传统）<br>• 系统自动根据时间数理推算卦象<br>• 适合在重要时刻或特定时辰起卦<br>• 不需要实物工具，时间即数理',
+    'about.method3Title': '3. 数字起卦',
+    'about.method3Content': '• 心中默念问题，想到什么数字就输入<br>• 每组可输入1-3个数字<br>• 共需输入6组数字，对应六爻<br>• 凭直觉输入，不要刻意思考<br>• 系统根据数字的奇偶性生成阴阳爻',
+    'about.hexagramTitle': '本卦与变卦',
+    'about.hexagramContent': '• <strong>本卦：</strong>当前事物的现状和基本情况<br>• <strong>变卦：</strong>事物未来的发展趋势和变化方向<br>• <strong>动爻：</strong>影响事态变化的关键因素',
+    'about.spiritsTitle': '六神与六亲',
+    'about.spiritsContent': '• <strong>六神：</strong>青龙、朱雀、勾陈、腾蛇、白虎、玄武，代表不同的吉凶属性<br>• <strong>六亲：</strong>父母、兄弟、子孙、妻财、官鬼，代表与问事者的关系',
+    'about.howTitle': '如何解卦',
+    'about.howContent': '<li>明确问题，诚心起卦</li><li>观察本卦和变卦的卦象</li><li>分析动爻的位置和含义</li><li>结合六神六亲综合判断</li><li>参考AI分析获得更深入的见解</li>',
+    'about.tipsTitle': '📝 使用建议',
+    'about.tipsContent': '• 保持虔诚之心，专注于问题本身<br>• 问题要具体明确，避免模糊不清<br>• 同一问题不宜反复占卜<br>• 易经是指引而非决定，最终选择权在自己',
+    'about.copyright': '© 2025 贞明 · 六爻解卦',
   },
 
   en: {
@@ -365,6 +398,39 @@ const translations = {
     'common.error': 'Error',
     'common.success': 'Success',
     'common.unlimited': 'Unlimited',
+
+    // Delete Account
+    'profile.deleteAccount': 'Delete Account',
+    'profile.deleteAccountConfirm': 'This will permanently delete your account and all data. This action cannot be undone. Are you sure?',
+    'profile.deleteAccountConfirm2': 'Final confirmation: Your account and all divination history will be permanently deleted.',
+    'profile.deleteAccountRelogin': 'For security, please log out and log back in before deleting your account.',
+    'profile.deleteAccountSuccess': 'Account deleted',
+
+    // About page
+    'about.appName': 'TrueInsight · Six-Line Divination',
+    'about.appDesc': 'TrueInsight is an I Ching six-line divination app rooted in classical Chinese wisdom, designed to help you gain clarity and navigate life\'s pivotal moments.',
+    'about.guideTitle': '📖 About Six-Line (Liu Yao) Divination',
+    'about.whatTitle': 'What is Liu Yao?',
+    'about.whatContent': 'Liu Yao (Six-Line Divination) is a core method of I Ching oracle practice. It reads the yin-yang shifts across six line positions to reveal how a situation is likely to develop. Each line represents a layer of time and circumstance, from the foundation (Line 1) to the outcome (Line 6).',
+    'about.linesTitle': 'Yin & Yang Lines',
+    'about.linesContent': '• <strong>Yang line (—)</strong>: Active, assertive, upward energy<br>• <strong>Yin line (- -)</strong>: Receptive, yielding, inward energy<br>• <strong>Old Yang</strong>: A yang line in motion, about to become yin<br>• <strong>Old Yin</strong>: A yin line in motion, about to become yang',
+    'about.methodsTitle': 'How to Cast a Hexagram',
+    'about.method1Title': '1. Manual Cast (Coin Method)',
+    'about.method1CoinContent': '<strong>Traditional coins:</strong><br>• Use three coins (ideally antique)<br>• Text side = Yin, blank side = Yang<br>• Hold coins in both hands, focus on your question<br>• Toss and record the result<br>• Repeat six times, building from Line 1 to Line 6',
+    'about.method1ModernContent': '<strong>Modern coins:</strong><br>• Use any three coins<br>• Number side = Yang, image/pattern side = Yin<br>• Focus on your question, then toss<br>• Repeat six times with full intention',
+    'about.method2Title': '2. Time-Based Cast',
+    'about.method2Content': '• Select a specific date and time for your reading<br>• Lunar calendar dates follow traditional practice<br>• The system automatically derives the hexagram from time numerology<br>• Best used at meaningful moments or specific hours<br>• No physical tools required — time itself is the oracle',
+    'about.method3Title': '3. Number-Based Cast',
+    'about.method3Content': '• Clear your mind, focus on your question<br>• Enter the numbers that naturally come to you<br>• Up to 3 digits per group, 6 groups total<br>• Trust your intuition — do not overthink<br>• Odd numbers = Yang; Even numbers = Yin',
+    'about.hexagramTitle': 'Original & Changed Hexagrams',
+    'about.hexagramContent': '• <strong>Original Hexagram:</strong> The present state of your situation<br>• <strong>Changed Hexagram:</strong> Where things are heading<br>• <strong>Moving Lines:</strong> The key forces driving the change',
+    'about.spiritsTitle': 'Six Spirits & Six Relatives',
+    'about.spiritsContent': '• <strong>Six Spirits:</strong> Azure Dragon, Vermilion Bird, Hook Chen, Flying Serpent, White Tiger, Black Tortoise — each carries distinct fortunate or challenging qualities<br>• <strong>Six Relatives:</strong> Parent, Sibling, Offspring, Wealth, Officer — each maps to a dimension of your life situation',
+    'about.howTitle': 'How to Read Your Result',
+    'about.howContent': '<li>Define your question clearly before casting</li><li>Observe the original and changed hexagrams</li><li>Focus on the moving lines — they drive the story</li><li>Integrate the Six Spirits and Six Relatives for context</li><li>Use the AI analysis for deeper, personalized insight</li>',
+    'about.tipsTitle': '📝 Tips for Best Results',
+    'about.tipsContent': '• Approach with a calm, focused mind<br>• Ask a specific, concrete question<br>• Do not cast the same question repeatedly<br>• I Ching offers guidance, not commands — you hold the final choice',
+    'about.copyright': '© 2025 TrueInsight',
   }
 };
 
@@ -375,7 +441,8 @@ class I18n {
   }
 
   detectLanguage() {
-    const browserLang = navigator.language || navigator.userLanguage || 'zh';
+    // Default to 'en' for undefined environments (e.g. Capacitor, older WebViews)
+    const browserLang = navigator.language || navigator.userLanguage || 'en';
     return browserLang.startsWith('zh') ? 'zh' : 'en';
   }
 
@@ -406,7 +473,7 @@ class I18n {
     this.listeners.push(fn);
   }
 
-  // Apply translations to all elements with data-i18n attribute
+  // Apply translations to all elements with data-i18n / data-i18n-html / data-i18n-placeholder
   applyToDOM() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
@@ -416,6 +483,13 @@ class I18n {
       } else {
         el.textContent = this.t(key);
       }
+    });
+    // data-i18n-html: sets innerHTML (use only for developer-controlled content)
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      const key = el.getAttribute('data-i18n-html');
+      const html = (translations[this.lang] || translations['zh'])[key]
+                || translations['zh'][key] || '';
+      if (html) el.innerHTML = html;
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       el.placeholder = this.t(el.getAttribute('data-i18n-placeholder'));

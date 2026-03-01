@@ -3040,3 +3040,29 @@ window.logout = async function() {
     }
 };
 
+// 删除账号（App Store 合规要求）
+window.deleteAccount = async function() {
+    const t = window.t || ((k) => k);
+
+    const step1 = confirm(t('profile.deleteAccountConfirm'));
+    if (!step1) return;
+
+    const step2 = confirm(t('profile.deleteAccountConfirm2'));
+    if (!step2) return;
+
+    try {
+        if (window.authManager && typeof window.authManager.deleteAccount === 'function') {
+            await window.authManager.deleteAccount();
+        }
+        alert(t('profile.deleteAccountSuccess'));
+        window.location.reload();
+    } catch (error) {
+        console.error('删除账号出错:', error);
+        if (error.code === 'auth/requires-recent-login') {
+            alert(t('profile.deleteAccountRelogin'));
+        } else {
+            alert('Delete failed. Please try again.');
+        }
+    }
+};
+

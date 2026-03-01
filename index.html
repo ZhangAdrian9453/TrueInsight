@@ -663,6 +663,17 @@
                                 <span class="text-red-600 font-medium" data-i18n="profile.logout">退出登录</span>
                             </div>
                         </button>
+
+                        <!-- Delete Account (App Store required) -->
+                        <button onclick="deleteAccount()" class="w-full flex items-center justify-center p-3 hover:bg-red-50 transition-colors rounded-xl mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-red-400">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6M14 11v6"/>
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            </svg>
+                            <span class="text-red-400 text-sm" data-i18n="profile.deleteAccount">删除账号</span>
+                        </button>
                     </div>
                 </div>
             </section>
@@ -838,43 +849,43 @@
                                     <circle cx="60" cy="60" r="6" fill="#1A1A1A"/>
                                 </svg>
                             </div>
-                            <h4 class="text-lg font-medium text-gray-900">贞明 · 六爻解卦</h4>
+                            <h4 class="text-lg font-medium text-gray-900" data-i18n="about.appName">贞明 · 六爻解卦</h4>
                             <p class="text-sm text-gray-500 mt-1">v1.0.0</p>
                         </div>
-                        <p class="text-sm text-gray-600 text-center leading-relaxed">
+                        <p class="text-sm text-gray-600 text-center leading-relaxed" data-i18n="about.appDesc">
                             贞明是一款基于传统易学智慧的六爻占卜应用，旨在帮助用户通过易经的指引，洞察人生，把握机遇。
                         </p>
                     </div>
-                    
+
                     <!-- 六爻解卦基本说明 -->
                     <div class="glass-card p-6 mb-6">
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">📖 六爻解卦基本说明</h4>
-                        
+                        <h4 class="text-lg font-medium text-gray-900 mb-4" data-i18n="about.guideTitle">📖 六爻解卦基本说明</h4>
+
                         <div class="space-y-4 text-sm text-gray-700">
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">什么是六爻</h5>
-                                <p class="leading-relaxed">
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.whatTitle">什么是六爻</h5>
+                                <p class="leading-relaxed" data-i18n="about.whatContent">
                                     六爻是《周易》占卜的一种重要方法，通过六个爻位的阴阳变化来预测事物的发展趋势。每一爻代表不同的时间和空间层次，从下至上分别为初爻、二爻、三爻、四爻、五爻、上爻。
                                 </p>
                             </div>
-                            
+
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">阴阳爻</h5>
-                                <p class="leading-relaxed mb-2">
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.linesTitle">阴阳爻</h5>
+                                <p class="leading-relaxed mb-2" data-i18n-html="about.linesContent">
                                     • <strong>阳爻（—）</strong>：代表刚健、主动、向上的力量<br>
                                     • <strong>阴爻（- -）</strong>：代表柔顺、被动、收敛的力量<br>
                                     • <strong>老阳</strong>：阳爻动，将变为阴爻<br>
                                     • <strong>老阴</strong>：阴爻动，将变为阳爻
                                 </p>
                             </div>
-                            
+
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">起卦方法详解</h5>
-                                
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.methodsTitle">起卦方法详解</h5>
+
                                 <div class="space-y-3 mt-2">
                                     <div class="p-3 bg-gray-50 rounded-lg">
-                                        <p class="font-medium text-gray-900 mb-2">1. 手动起卦（铜钱/硬币摇卦）</p>
-                                        <p class="text-sm leading-relaxed mb-2">
+                                        <p class="font-medium text-gray-900 mb-2" data-i18n="about.method1Title">1. 手动起卦（铜钱/硬币摇卦）</p>
+                                        <p class="text-sm leading-relaxed mb-2" data-i18n-html="about.method1CoinContent">
                                             <strong>铜钱摇卦：</strong><br>
                                             • 准备三枚铜钱（古钱币）<br>
                                             • 字面为阴，无字面为阳<br>
@@ -882,7 +893,7 @@
                                             • 摇动后掷到桌上，记录结果<br>
                                             • 重复六次，从下至上记录（初爻→上爻）
                                         </p>
-                                        <p class="text-sm leading-relaxed">
+                                        <p class="text-sm leading-relaxed" data-i18n-html="about.method1ModernContent">
                                             <strong>硬币摇卦：</strong><br>
                                             • 使用三枚现代硬币（一元、五角等）<br>
                                             • 有字一面为阳，花纹/图案面为阴<br>
@@ -890,10 +901,10 @@
                                             • 连续摇六次，每次专注于问题
                                         </p>
                                     </div>
-                                    
+
                                     <div class="p-3 bg-gray-50 rounded-lg">
-                                        <p class="font-medium text-gray-900 mb-2">2. 时间起卦</p>
-                                        <p class="text-sm leading-relaxed">
+                                        <p class="font-medium text-gray-900 mb-2" data-i18n="about.method2Title">2. 时间起卦</p>
+                                        <p class="text-sm leading-relaxed" data-i18n-html="about.method2Content">
                                             • 选择起卦的具体时间（年月日时）<br>
                                             • 最好使用农历时间（更符合传统）<br>
                                             • 系统自动根据时间数理推算卦象<br>
@@ -901,10 +912,10 @@
                                             • 不需要实物工具，时间即数理
                                         </p>
                                     </div>
-                                    
+
                                     <div class="p-3 bg-gray-50 rounded-lg">
-                                        <p class="font-medium text-gray-900 mb-2">3. 数字起卦</p>
-                                        <p class="text-sm leading-relaxed">
+                                        <p class="font-medium text-gray-900 mb-2" data-i18n="about.method3Title">3. 数字起卦</p>
+                                        <p class="text-sm leading-relaxed" data-i18n-html="about.method3Content">
                                             • 心中默念问题，想到什么数字就输入<br>
                                             • 每组可输入1-3个数字<br>
                                             • 共需输入6组数字，对应六爻<br>
@@ -914,27 +925,27 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">本卦与变卦</h5>
-                                <p class="leading-relaxed">
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.hexagramTitle">本卦与变卦</h5>
+                                <p class="leading-relaxed" data-i18n-html="about.hexagramContent">
                                     • <strong>本卦：</strong>当前事物的现状和基本情况<br>
                                     • <strong>变卦：</strong>事物未来的发展趋势和变化方向<br>
                                     • <strong>动爻：</strong>影响事态变化的关键因素
                                 </p>
                             </div>
-                            
+
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">六神与六亲</h5>
-                                <p class="leading-relaxed">
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.spiritsTitle">六神与六亲</h5>
+                                <p class="leading-relaxed" data-i18n-html="about.spiritsContent">
                                     • <strong>六神：</strong>青龙、朱雀、勾陈、腾蛇、白虎、玄武，代表不同的吉凶属性<br>
                                     • <strong>六亲：</strong>父母、兄弟、子孙、妻财、官鬼，代表与问事者的关系
                                 </p>
                             </div>
-                            
+
                             <div>
-                                <h5 class="font-medium text-gray-900 mb-2">如何解卦</h5>
-                                <ol class="list-decimal list-inside space-y-1 leading-relaxed">
+                                <h5 class="font-medium text-gray-900 mb-2" data-i18n="about.howTitle">如何解卦</h5>
+                                <ol class="list-decimal list-inside space-y-1 leading-relaxed" data-i18n-html="about.howContent">
                                     <li>明确问题，诚心起卦</li>
                                     <li>观察本卦和变卦的卦象</li>
                                     <li>分析动爻的位置和含义</li>
@@ -944,21 +955,18 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- 使用建议 -->
                     <div class="glass-card p-6 mb-6">
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">📝 使用建议</h4>
-                        <div class="space-y-2 text-sm text-gray-700">
-                            <p>• 保持虔诚之心，专注于问题本身</p>
-                            <p>• 问题要具体明确，避免模糊不清</p>
-                            <p>• 同一问题不宜反复占卜</p>
-                            <p>• 易经是指引而非决定，最终选择权在自己</p>
+                        <h4 class="text-lg font-medium text-gray-900 mb-4" data-i18n="about.tipsTitle">📝 使用建议</h4>
+                        <div class="text-sm text-gray-700 leading-relaxed" data-i18n-html="about.tipsContent">
+                            • 保持虔诚之心，专注于问题本身<br>• 问题要具体明确，避免模糊不清<br>• 同一问题不宜反复占卜<br>• 易经是指引而非决定，最终选择权在自己
                         </div>
                     </div>
-                    
-                    <!-- 联系方式 -->
+
+                    <!-- 版权 -->
                     <div class="glass-card p-6 text-center">
-                        <p class="text-xs text-gray-400">© 2025 贞明 · 六爻解卦</p>
+                        <p class="text-xs text-gray-400" data-i18n="about.copyright">© 2025 贞明 · 六爻解卦</p>
                     </div>
                 </div>
             </section>

@@ -3,6 +3,7 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
+    deleteUser,
     onAuthStateChanged
 } from 'firebase/auth';
 import { auth } from './src/firebase.js';
@@ -70,6 +71,19 @@ class AuthManager {
         await signOut(auth);
         this.currentUser = null;
         localStorage.removeItem('zhenming_user');
+    }
+
+    /**
+     * 永久删除当前用户的 Firebase 账号并清理本地数据。
+     * 若 Firebase 抛出 auth/requires-recent-login，调用方需提示用户重新登录后再试。
+     */
+    async deleteAccount() {
+        const user = auth.currentUser;
+        if (!user) throw new Error('No authenticated user');
+        await deleteUser(user);
+        this.currentUser = null;
+        localStorage.clear();
+        sessionStorage.clear();
     }
 }
 
