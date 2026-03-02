@@ -1201,6 +1201,10 @@ document.addEventListener('DOMContentLoaded', function() {
         await saveCompleteHexagramResult(hexagram);
     }
     
+    // English translation maps for divination table
+    const _SPIRIT_EN_MAP   = {'青龙':'Azure Dragon','朱雀':'Vermilion Bird','勾陈':'Curved Array','腾蛇':'Flying Serpent','白虎':'White Tiger','玄武':'Black Tortoise'};
+    const _RELATION_EN_MAP = {'父母':'Parents','兄弟':'Siblings','子孙':'Offspring','妻财':'Wealth','官鬼':'Officer'};
+
     function generateHexagramTable(hexagram) {
         const tableBody = document.getElementById('hexagram-table-body');
         tableBody.innerHTML = '';
@@ -1211,6 +1215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ? window.getPaipanData(hexagram.lines, _li.dayGan || '甲', _li.monthZhi || '子')
             : null;
         const _lineDetails = _paipanResult ? _paipanResult.lineDetails : null;
+        const _isEn = window.i18n?.getLanguage() === 'en';
 
         // 从上爻到初爻 (i=5 到 i=0)
         for (let i = 5; i >= 0; i--) {
@@ -1218,11 +1223,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             row.className = 'border-b border-gray-100';
 
-            // 六神/六亲：优先使用真实排盘数据
-            const spirit   = _lineDetails ? _lineDetails[i].spirit   : ['白虎','腾蛇','勾陈','朱雀','青龙','玄武'][5-i];
-            const relation = _lineDetails ? _lineDetails[i].relation  : ['父母','兄弟','子孙','妻财','官鬼','父母'][5-i];
+            // 六神/六亲：优先使用真实排盘数据，英文模式下翻译
+            const _rawSpirit   = _lineDetails ? _lineDetails[i].spirit   : ['白虎','腾蛇','勾陈','朱雀','青龙','玄武'][5-i];
+            const _rawRelation = _lineDetails ? _lineDetails[i].relation  : ['父母','兄弟','子孙','妻财','官鬼','父母'][5-i];
+            const spirit   = _isEn ? (_SPIRIT_EN_MAP[_rawSpirit]   || _rawSpirit)   : _rawSpirit;
+            const relation = _isEn ? (_RELATION_EN_MAP[_rawRelation] || _rawRelation) : _rawRelation;
             const zhiEl    = _lineDetails ? `${_lineDetails[i].zhi}${_lineDetails[i].element}` : '';
-            const shiyingMark = _lineDetails && _lineDetails[i].isShi ? '世' : (_lineDetails && _lineDetails[i].isYing ? '应' : '');
+            const shiyingMark = _lineDetails && _lineDetails[i].isShi
+                ? (_isEn ? 'Self' : '世')
+                : (_lineDetails && _lineDetails[i].isYing ? (_isEn ? 'Match' : '应') : '');
 
             // 生成爻象符号
             const originalSymbol = getLineSymbol(line.type);
@@ -1282,15 +1291,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateSpiritsInfo() {
+        const spiritsContainer = document.querySelector('.spirits-info');
         const spiritsRow1 = document.getElementById('spirits-row1');
         const spiritsRow2 = document.getElementById('spirits-row2');
-        
+
+        // English users don't need traditional Chinese auspicious-spirit annotations
+        if (window.i18n?.getLanguage() === 'en') {
+            if (spiritsContainer) spiritsContainer.style.display = 'none';
+            return;
+        }
+
+        if (spiritsContainer) spiritsContainer.style.display = '';
+
         // 将所有神煞信息合并到一行显示
         const allSpirits = '禄神-亥　羊刃-子　文昌-寅　驿马-申　桃花-卯　将星-午　华盖-戌　谋星-辰　劫煞-亥　灾煞-子　天医-申　天喜-辰　贵人-卯,巳';
-        
+
         spiritsRow1.innerHTML = allSpirits;
         spiritsRow2.innerHTML = ''; // 清空第二行
-        
+
         // 确保神煞信息左对齐，允许换行
         spiritsRow1.style.textAlign = 'left';
         spiritsRow1.style.display = 'block';
@@ -1300,13 +1318,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateTimeInfo() {
         const divinationTime = document.getElementById('divination-time');
         const lunarInfo = document.getElementById('lunar-info');
-        // 获取当前时间信息
         const now = new Date();
-        const timeStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const isEn = window.i18n?.getLanguage() === 'en';
 
-        const lunarDateInfo = getLunarDateInfo(now);
-        lunarInfo.innerHTML = `<span>${escapeHTML(lunarDateInfo.lunarDate)}</span><span>${escapeHTML(lunarDateInfo.xuankong)}</span>`;
-        divinationTime.textContent = `起卦时间：${timeStr}`;
+        if (isEn) {
+            const _MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            divinationTime.textContent = `Cast: ${_MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}  ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+            lunarInfo.style.display = 'none'; // hide ganzhi / xuankong row
+        } else {
+            const timeStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const lunarDateInfo = getLunarDateInfo(now);
+            lunarInfo.innerHTML = `<span>${escapeHTML(lunarDateInfo.lunarDate)}</span><span>${escapeHTML(lunarDateInfo.xuankong)}</span>`;
+            lunarInfo.style.display = '';
+            divinationTime.textContent = `起卦时间：${timeStr}`;
+        }
     }
     
     // ── 进度条控制 ────────────────────────────────────────────
@@ -1788,12 +1813,19 @@ window.viewHexagramDetail = async function(recordId) {
             hexagramTable.innerHTML = record.hexagramHTML.hexagramTable;
         }
         
-        // 恢复神煞信息
-        if (record.hexagramHTML.spiritsInfo) {
-            const spiritsRow1 = document.getElementById('spirits-row1');
-            const spiritsRow2 = document.getElementById('spirits-row2');
-            if (spiritsRow1) spiritsRow1.textContent = record.hexagramHTML.spiritsInfo.row1;
-            if (spiritsRow2) spiritsRow2.textContent = record.hexagramHTML.spiritsInfo.row2;
+        // 恢复神煞信息（英文模式下隐藏）
+        const _restoreIsEn = window.i18n?.getLanguage() === 'en';
+        const _spiritsContainer = document.querySelector('.spirits-info');
+        if (_restoreIsEn) {
+            if (_spiritsContainer) _spiritsContainer.style.display = 'none';
+        } else {
+            if (_spiritsContainer) _spiritsContainer.style.display = '';
+            if (record.hexagramHTML.spiritsInfo) {
+                const spiritsRow1 = document.getElementById('spirits-row1');
+                const spiritsRow2 = document.getElementById('spirits-row2');
+                if (spiritsRow1) spiritsRow1.textContent = record.hexagramHTML.spiritsInfo.row1;
+                if (spiritsRow2) spiritsRow2.textContent = record.hexagramHTML.spiritsInfo.row2;
+            }
         }
     } else {
         // 如果没有保存HTML，重新生成
@@ -1811,11 +1843,19 @@ window.viewHexagramDetail = async function(recordId) {
     // 恢复时间信息
     const divinationTime = document.getElementById('divination-time');
     const lunarInfo = document.getElementById('lunar-info');
+    const _historyIsEn = window.i18n?.getLanguage() === 'en';
     if (divinationTime) {
-        divinationTime.textContent = `起卦时间：${record.date} ${record.time}`;
+        divinationTime.textContent = _historyIsEn
+            ? `Cast: ${record.date} ${record.time}`
+            : `起卦时间：${record.date} ${record.time}`;
     }
     if (lunarInfo) {
-        lunarInfo.innerHTML = `<span>${escapeHTML(record.lunarDate)}</span><span>${escapeHTML(record.xuankong)}</span>`;
+        if (_historyIsEn) {
+            lunarInfo.style.display = 'none';
+        } else {
+            lunarInfo.style.display = '';
+            lunarInfo.innerHTML = `<span>${escapeHTML(record.lunarDate)}</span><span>${escapeHTML(record.xuankong)}</span>`;
+        }
     }
 
     // 恢复解析结果

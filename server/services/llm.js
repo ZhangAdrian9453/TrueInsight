@@ -37,6 +37,10 @@ function loadDivinationLogic() {
 // 爻位名称
 const _POSITIONS = ['初爻','二爻','三爻','四爻','五爻','上爻'];
 
+// English translations for divination terms
+const _SPIRIT_EN = { '青龙':'Azure Dragon','朱雀':'Vermilion Bird','勾陈':'Curved Array','腾蛇':'Flying Serpent','白虎':'White Tiger','玄武':'Black Tortoise' };
+const _RELATION_EN = { '父母':'Parents','兄弟':'Siblings','子孙':'Offspring','妻财':'Wealth','官鬼':'Officer' };
+
 const _SYSTEM_PROMPT_ZH = `# Role: 顶级六爻实战推演专家 & 决策顾问
 
 ## Profile:
@@ -98,6 +102,11 @@ function _parseToHTML(text) {
         '决策与行动指南': '【行动指南】',
         '行动指南': '【行动指南】',
         '人事配合': '【行动指南】',
+        // English section titles from _SYSTEM_PROMPT_EN
+        'Core Verdict': '[Core Verdict]',
+        'Hexagram Insight': '[Hexagram Insight]',
+        'Key Timing': '[Key Timing]',
+        'Actionable Advice': '[Actionable Advice]',
     };
 
     const clean = text
@@ -112,7 +121,7 @@ function _parseToHTML(text) {
         .replace(/人事配合/g, '');
 
     const parts = clean.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
-        const titleMatch = line.match(/^【([^】]+)】/);
+        const titleMatch = line.match(/^[【\[]([^\]】]+)[】\]]/);
         if (titleMatch) {
             const key = Object.keys(TITLE_MAP).find(k => titleMatch[1].includes(k));
             if (key) {
@@ -141,6 +150,16 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
     const hasRich = lineDetails[0] && lineDetails[0].zhi;
 
     if (!hasRich) {
+        if (lang === 'en') {
+            const rows = lineDetails.map((l, i) => {
+                const yang = ['yang','laoyang','shaoyang'].includes(l.type);
+                const sym  = yang ? '━━━━' : '━ ━━';
+                const dyn  = l.changing ? (l.type==='laoyang' ? '○(Yang→Yin)' : '×(Yin→Yang)') : 'Static';
+                return `Line ${i+1}  ${sym}  ${dyn}`;
+            });
+            const changing = lineDetails.filter(l=>l.changing).map((_,i)=>`Line ${i+1}`).join(', ') || 'No changing lines';
+            return `[Question] ${question}\n[Cast Time] ${lunarDate}\n[Hexagram] ${originalName} → ${changedName}\n\n[Lines, bottom to top]\n${rows.join('\n')}\nChanging lines: ${changing}\n\nOutput strictly in English: [Core Verdict], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
+        }
         const rows = lineDetails.map((l, i) => {
             const yang = ['yang','laoyang','shaoyang'].includes(l.type);
             const sym  = yang ? '━━━━' : '━ ━━';
@@ -157,15 +176,53 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
         const ln   = lineDetails[i];
         const yang = ['yang','laoyang','shaoyang'].includes(ln.type);
         const sym  = yang ? '━━━━' : '━ ━━';
-        let   dyn;
-        if (ln.type === 'laoyang') dyn = '○(动→阴)';
-        else if (ln.type === 'laoyin') dyn = '×(动→阳)';
-        else dyn = '静';
-        const sw = ln.isShi ? '〔世〕' : (ln.isYing ? '〔应〕' : '      ');
-        tableRows.push(`${_POSITIONS[i]}  ${ln.spirit}  ${ln.relation}  ${ln.zhi}${ln.element}  ${sym}  ${dyn}  ${ln.strength}  ${sw}`);
+        if (lang === 'en') {
+            const dyn = ln.type === 'laoyang' ? '○(Yang→Yin)' : (ln.type === 'laoyin' ? '×(Yin→Yang)' : 'Static');
+            const sw  = ln.isShi ? '[Self]' : (ln.isYing ? '[Match]' : '       ');
+            const sp  = _SPIRIT_EN[ln.spirit]   || ln.spirit;
+            const rl  = _RELATION_EN[ln.relation] || ln.relation;
+            tableRows.push(`Line ${i+1}  ${sp}  ${rl}  ${ln.zhi}${ln.element}  ${sym}  ${dyn}  ${ln.strength}  ${sw}`);
+        } else {
+            const dyn = ln.type === 'laoyang' ? '○(动→阴)' : (ln.type === 'laoyin' ? '×(动→阳)' : '静');
+            const sw  = ln.isShi ? '〔世〕' : (ln.isYing ? '〔应〕' : '      ');
+            tableRows.push(`${_POSITIONS[i]}  ${ln.spirit}  ${ln.relation}  ${ln.zhi}${ln.element}  ${sym}  ${dyn}  ${ln.strength}  ${sw}`);
+        }
     }
 
     const changingLines = lineDetails.map((l,i) => l.changing ? {i,...l} : null).filter(Boolean);
+    const palaceName = paipan?.palaceName || '';
+    const palaceEl   = paipan?.palaceElement || '';
+
+    if (lang === 'en') {
+        const dynDetail = changingLines.length > 0
+            ? changingLines.map(l => {
+                const dir = l.type === 'laoyang' ? 'Yang→Yin' : 'Yin→Yang';
+                const sp  = _SPIRIT_EN[l.spirit]    || l.spirit;
+                const rl  = _RELATION_EN[l.relation] || l.relation;
+                return `Line ${l.i+1} (${l.zhi}${l.element}/${rl}/${sp}) ${dir}`;
+              }).join('; ')
+            : 'No changing lines';
+        const palace = palaceName
+            ? `\n[Palace] ${palaceName} (${palaceEl})  Self-line: Line ${(paipan.shiPos||6)}  Match-line: Line ${(paipan.yingPos||3)}\n`
+            : '\n';
+        const timeExtra2 = (dayGan || monthZhi) ? `  Day-stem: ${dayGan||''}  Month-branch: ${monthZhi||''}` : '';
+        return `[Question] ${question}
+
+[Cast Time]
+${lunarDate}${timeExtra2}
+${palace}
+[Original Hexagram] ${originalName}  →  [Changed Hexagram] ${changedName}
+
+[Full Paipan Layout (top to bottom)]
+(Position  Spirit  Relation  Branch  Line  Change  Strength  Self/Match)
+${tableRows.join('\n')}
+
+[Changing Lines]
+${dynDetail}
+
+Strictly output in English: [Core Verdict], [Hexagram Insight], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
+    }
+
     const dynDetail = changingLines.length > 0
         ? changingLines.map(l => {
             const dir = l.type==='laoyang' ? '老阳动变阴' : '老阴动变阳';
@@ -173,8 +230,6 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
           }).join('；')
         : '六爻皆静（无动爻）';
 
-    const palaceName = paipan?.palaceName || '';
-    const palaceEl   = paipan?.palaceElement || '';
     const palaceSection = palaceName
         ? `\n【八宫归属】${palaceName}宫（${palaceEl}）　世爻：${_POSITIONS[(paipan.shiPos||6)-1]}　应爻：${_POSITIONS[(paipan.yingPos||3)-1]}\n`
         : '\n';
