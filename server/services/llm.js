@@ -78,13 +78,15 @@ const _SYSTEM_PROMPT_ZH = `# Role: 顶级六爻实战推演专家 & 决策顾问
 【行动指南】
 针对结论给出现实的指导建议。明确告知用户需要如何"尽人事"（例如："建议立即吃药并卧床休息"、"大势已去，建议做好备用方案"、"当心有竞争者暗中使坏，注意防范"等）。`;
 
-const _SYSTEM_PROMPT_EN = `You are a master of I-Ching (Six-line divination) and a strategic life advisor. Your style is direct, insightful, and focused on practical action.
+const _SYSTEM_PROMPT_EN = `LANGUAGE RULE (absolute, non-negotiable): Your entire response MUST be written in English. Do NOT output any Chinese characters — not even a single one. The divination data you receive contains Chinese proper nouns (hexagram names, branch characters) that you may reference by their English equivalents or phonetic transliterations, but your prose must be 100% English.
+
+You are a master of I-Ching (Six-line divination) and a strategic life advisor. Your style is direct, insightful, and focused on practical action.
 
 Core Methodology (Internal logic only, do not output these terms):
 1. Pinpoint the core issue.
 2. Analyze hidden dynamics to foresee unexpected turns.
 3. Assess timing.
-4. Provide actionable advice based the changing lines.
+4. Provide actionable advice based on the changing lines.
 
 Input Handling Rule (Highest Priority — evaluate before divining):
 Before interpreting the hexagram, assess whether the user's question is a genuine, specific concern.
@@ -163,7 +165,7 @@ function _parseToHTML(text) {
 function _buildUserPrompt(question, originalName, changedName, lineDetails, lunarDate, xuankong, lang, dayGan, monthZhi, paipan) {
     if (!lineDetails || lineDetails.length === 0) {
         return lang === 'en'
-            ? `Question: ${question}\nOriginal Hexagram: ${originalName}\nChanged Hexagram: ${changedName}\n\nPlease provide a detailed divination analysis.`
+            ? `Question: ${question}\nOriginal Hexagram: ${originalName}\nChanged Hexagram: ${changedName}\n\nCRITICAL: Respond in English ONLY. Zero Chinese characters allowed.\nProvide a detailed divination analysis.`
             : `问题：${question}\n本卦：${originalName}\n变卦：${changedName}\n\n请给出详细的解卦分析。`;
     }
 
@@ -178,7 +180,7 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
                 return `Line ${i+1}  ${sym}  ${dyn}`;
             });
             const changing = lineDetails.filter(l=>l.changing).map((_,i)=>`Line ${i+1}`).join(', ') || 'No changing lines';
-            return `[Question] ${question}\n[Cast Time] ${lunarDate}\n[Hexagram] ${originalName} → ${changedName}\n\n[Lines, bottom to top]\n${rows.join('\n')}\nChanging lines: ${changing}\n\nOutput strictly in English: [Core Verdict], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
+            return `[Question] ${question}\n[Cast Time] ${lunarDate}\n[Hexagram] ${originalName} → ${changedName}\n\n[Lines, bottom to top]\n${rows.join('\n')}\nChanging lines: ${changing}\n\nCRITICAL: Respond in English ONLY. Zero Chinese characters allowed.\nOutput: [Core Verdict], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
         }
         const rows = lineDetails.map((l, i) => {
             const yang = ['yang','laoyang','shaoyang'].includes(l.type);
@@ -240,7 +242,8 @@ ${tableRows.join('\n')}
 [Changing Lines]
 ${dynDetail}
 
-Strictly output in English: [Core Verdict], [Hexagram Insight], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
+CRITICAL: Respond in English ONLY. Zero Chinese characters allowed in your response.
+Strictly output: [Core Verdict], [Hexagram Insight], [Key Timing], [Actionable Advice]. Plain text, no Markdown.`;
     }
 
     const dynDetail = changingLines.length > 0
