@@ -38,8 +38,12 @@ function loadDivinationLogic() {
 const _POSITIONS = ['初爻','二爻','三爻','四爻','五爻','上爻'];
 
 // English translations for divination terms
-const _SPIRIT_EN = { '青龙':'Azure Dragon','朱雀':'Vermilion Bird','勾陈':'Curved Array','腾蛇':'Flying Serpent','白虎':'White Tiger','玄武':'Black Tortoise' };
+const _SPIRIT_EN   = { '青龙':'Azure Dragon','朱雀':'Vermilion Bird','勾陈':'Curved Array','腾蛇':'Flying Serpent','白虎':'White Tiger','玄武':'Black Tortoise' };
 const _RELATION_EN = { '父母':'Parents','兄弟':'Siblings','子孙':'Offspring','妻财':'Wealth','官鬼':'Officer' };
+// Earthly branches (phonetic), elements, and strength indicators
+const _BRANCH_EN   = { '子':'Zi','丑':'Chou','寅':'Yin','卯':'Mao','辰':'Chen','巳':'Si','午':'Wu','未':'Wei','申':'Shen','酉':'You','戌':'Xu','亥':'Hai' };
+const _ELEMENT_EN  = { '水':'Water','土':'Earth','木':'Wood','火':'Fire','金':'Metal' };
+const _STRENGTH_EN = { '旺':'Strong','相':'Active','休':'Resting','囚':'Weak','死':'Defeated' };
 
 const _SYSTEM_PROMPT_ZH = `# Role: 顶级六爻实战推演专家 & 决策顾问
 
@@ -201,9 +205,12 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
         if (lang === 'en') {
             const dyn = ln.type === 'laoyang' ? '○(Yang→Yin)' : (ln.type === 'laoyin' ? '×(Yin→Yang)' : 'Static');
             const sw  = ln.isShi ? '[Self]' : (ln.isYing ? '[Match]' : '       ');
-            const sp  = _SPIRIT_EN[ln.spirit]   || ln.spirit;
+            const sp  = _SPIRIT_EN[ln.spirit]    || ln.spirit;
             const rl  = _RELATION_EN[ln.relation] || ln.relation;
-            tableRows.push(`Line ${i+1}  ${sp}  ${rl}  ${ln.zhi}${ln.element}  ${sym}  ${dyn}  ${ln.strength}  ${sw}`);
+            const br  = _BRANCH_EN[ln.zhi]       || ln.zhi;
+            const el  = _ELEMENT_EN[ln.element]  || ln.element;
+            const str = _STRENGTH_EN[ln.strength] || ln.strength;
+            tableRows.push(`Line ${i+1}  ${sp}  ${rl}  ${br}/${el}  ${sym}  ${dyn}  ${str}  ${sw}`);
         } else {
             const dyn = ln.type === 'laoyang' ? '○(动→阴)' : (ln.type === 'laoyin' ? '×(动→阳)' : '静');
             const sw  = ln.isShi ? '〔世〕' : (ln.isYing ? '〔应〕' : '      ');
@@ -221,7 +228,9 @@ function _buildUserPrompt(question, originalName, changedName, lineDetails, luna
                 const dir = l.type === 'laoyang' ? 'Yang→Yin' : 'Yin→Yang';
                 const sp  = _SPIRIT_EN[l.spirit]    || l.spirit;
                 const rl  = _RELATION_EN[l.relation] || l.relation;
-                return `Line ${l.i+1} (${l.zhi}${l.element}/${rl}/${sp}) ${dir}`;
+                const br  = _BRANCH_EN[l.zhi]       || l.zhi;
+                const el  = _ELEMENT_EN[l.element]  || l.element;
+                return `Line ${l.i+1} (${br}/${el} | ${rl} | ${sp}) ${dir}`;
               }).join('; ')
             : 'No changing lines';
         const palace = palaceName
