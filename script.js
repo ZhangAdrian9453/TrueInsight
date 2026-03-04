@@ -211,6 +211,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const methodBtns = document.querySelectorAll('.method-btn');
     const coinBtns = document.querySelectorAll('.coin-btn');
     const yarrowResults = document.querySelectorAll('.yarrow-result');
+
+    // Coin button label: sun/moon icons in EN, 阳/阴 in ZH
+    function _coinLabel(state) {
+        return window.i18n?.getLanguage() === 'en'
+            ? (state === 'yang' ? '☀️' : '🌙')
+            : (state === 'yang' ? '阳' : '阴');
+    }
+    function _updateCoinLabels() {
+        coinBtns.forEach(btn => {
+            btn.textContent = _coinLabel(btn.dataset.state || 'yang');
+        });
+    }
+    // Update coin labels whenever language changes
+    window.i18n?.onChange(() => { _updateCoinLabels(); });
+    // Apply on initial load (page may default to EN)
+    _updateCoinLabels();
     const questionInput = document.getElementById('question');
     
     const feedbackGoodBtn = document.getElementById('feedback-good-btn');
@@ -356,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const line = btn.dataset.line;
                 const coin = btn.dataset.coin;
                 btn.dataset.state = 'yang';
-                btn.textContent = '阳';
+                btn.textContent = _coinLabel('yang');
                 btn.classList.remove('selected');
                 
                 // Initialize coin states
@@ -403,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle state
             const newState = currentState === 'yang' ? 'yin' : 'yang';
             btn.dataset.state = newState;
-            btn.textContent = newState === 'yang' ? '阳' : '阴';
+            btn.textContent = _coinLabel(newState);
             btn.classList.toggle('selected', newState === 'yin');
             
             // Update coin states
@@ -798,10 +814,10 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('解卦失败:', error);
             if (window.toast) toast.error(t('toast.divinationFailed') + ': ' + error.message);
         } finally {
-            // 恢复按钮状态
+            // 恢复按钮状态（使用当前语言的翻译，不能用初始捕获的中文字符串）
             isAnalyzing = false;
             analyzeBtn.disabled = false;
-            analyzeBtn.textContent = analyzeBtnOriginalText;
+            analyzeBtn.textContent = t('input.analyze');
         }
     });
     
