@@ -212,15 +212,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const coinBtns = document.querySelectorAll('.coin-btn');
     const yarrowResults = document.querySelectorAll('.yarrow-result');
 
-    // Coin button label: sun/moon icons in EN, 阳/阴 in ZH
+    // Coin button label: sun/moon symbols in EN, 阳/阴 in ZH
+    // Returns HTML string (use btn.innerHTML, not textContent)
     function _coinLabel(state) {
-        return window.i18n?.getLanguage() === 'en'
-            ? (state === 'yang' ? '☀️' : '🌙')
-            : (state === 'yang' ? '阳' : '阴');
+        if (window.i18n?.getLanguage() === 'en') {
+            return state === 'yang'
+                ? '<span style="font-size:1.25em;font-weight:600;line-height:1">○</span>'
+                : '☽';
+        }
+        return state === 'yang' ? '阳' : '阴';
     }
     function _updateCoinLabels() {
         coinBtns.forEach(btn => {
-            btn.textContent = _coinLabel(btn.dataset.state || 'yang');
+            btn.innerHTML = _coinLabel(btn.dataset.state || 'yang');
         });
     }
     // Update coin labels whenever language changes
@@ -372,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const line = btn.dataset.line;
                 const coin = btn.dataset.coin;
                 btn.dataset.state = 'yang';
-                btn.textContent = _coinLabel('yang');
+                btn.innerHTML = _coinLabel('yang');
                 btn.classList.remove('selected');
                 
                 // Initialize coin states
@@ -419,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Toggle state
             const newState = currentState === 'yang' ? 'yin' : 'yang';
             btn.dataset.state = newState;
-            btn.textContent = _coinLabel(newState);
+            btn.innerHTML = _coinLabel(newState);
             btn.classList.toggle('selected', newState === 'yin');
             
             // Update coin states

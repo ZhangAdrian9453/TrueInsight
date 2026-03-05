@@ -159,28 +159,30 @@ body::-webkit-scrollbar {
     display: block;
 }
 
-.hexagram-line.changing {
+/* 动爻行需要 position:relative 才能让 ::after 正确定位 */
+.hexagram-line.changing-yang,
+.hexagram-line.changing-yin {
     position: relative;
 }
 
-/* 老阳动爻标识 */
-.hexagram-line.changing-yang::before,
-.changing-yang::after {
+/* 老阳动爻标识 ○ — 垂直居中对齐爻条 */
+.hexagram-line.changing-yang::after {
     content: "○";
     position: absolute;
     right: -20px;
-    top: -4px;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 14px;
     color: var(--accent-color);
 }
 
-/* 老阴动爻标识 */
-.hexagram-line.changing-yin::before,
-.changing-yin::after {
+/* 老阴动爻标识 × — 垂直居中对齐爻条 */
+.hexagram-line.changing-yin::after {
     content: "×";
     position: absolute;
     right: -20px;
-    top: -4px;
+    top: 50%;
+    transform: translateY(-50%);
     font-size: 14px;
     color: var(--accent-color);
 }

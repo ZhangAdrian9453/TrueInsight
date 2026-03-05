@@ -146,20 +146,30 @@ function _parseToHTML(text) {
         .replace(/决策与行动指南/g, '')
         .replace(/人事配合/g, '');
 
-    const parts = clean.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
-        const titleMatch = line.match(/^[【\[]([^\]】]+)[】\]]/);
+    const parts = clean.split('\n').map(l => l.trim()).filter(Boolean).flatMap(line => {
+        // Match both 【Title】 and [Title] with optional inline content after the label
+        const titleMatch = line.match(/^([【\[]([^\]】]+)[】\]])\s*[:：]?\s*(.*)/);
         if (titleMatch) {
-            const key = Object.keys(TITLE_MAP).find(k => titleMatch[1].includes(k));
+            const labelInner  = titleMatch[2];   // e.g. "Core Verdict" or "核心结论"
+            const afterLabel  = titleMatch[3].trim(); // text on same line after the label
+            const key = Object.keys(TITLE_MAP).find(k => labelInner.includes(k));
+            const result = [];
             if (key) {
-                if (TITLE_MAP[key] === null) return '';
-                return `<h4 class="font-semibold text-gray-800 mb-2 mt-5">${esc(TITLE_MAP[key])}</h4>`;
+                if (TITLE_MAP[key] === null) return [];
+                result.push(`<h4 class="font-semibold text-gray-800 mb-2 mt-5">${esc(TITLE_MAP[key])}</h4>`);
+            } else {
+                result.push(`<h4 class="font-semibold text-gray-800 mb-2 mt-5">${esc(titleMatch[1])}</h4>`);
             }
-            return `<h4 class="font-semibold text-gray-800 mb-2 mt-5">${esc(line)}</h4>`;
+            // If the AI put its answer on the same line as the label, preserve it
+            if (afterLabel) {
+                result.push(`<p class="text-sm text-gray-700 mb-2 leading-relaxed">${esc(afterLabel)}</p>`);
+            }
+            return result;
         }
         if (/^[-•·]\s/.test(line)) {
-            return `<p class="text-sm text-gray-700 ml-4 mb-1">• ${esc(line.replace(/^[-•·]\s*/, ''))}</p>`;
+            return [`<p class="text-sm text-gray-700 ml-4 mb-1">• ${esc(line.replace(/^[-•·]\s*/, ''))}</p>`];
         }
-        return `<p class="text-sm text-gray-700 mb-2 leading-relaxed">${esc(line)}</p>`;
+        return [`<p class="text-sm text-gray-700 mb-2 leading-relaxed">${esc(line)}</p>`];
     }).filter(Boolean);
 
     return `<div class="analysis-content space-y-0.5">${parts.join('')}</div>`;
