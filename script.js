@@ -1419,9 +1419,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             if (resp.ok) {
                 const data = await resp.json();
+                console.log('[DEBUG Frontend received] success:', data.success, '| source:', data.source, '| analysis length:', data.analysis?.length, '| analysis前50字符:', data.analysis?.substring(0, 50));
                 if (data.success && data.analysis) {
                     analysis = data.analysis;
                     console.log('[performAIAnalysis] 后端返回成功, source:', data.source);
+                } else {
+                    console.warn('[DEBUG Frontend received] data.success 或 data.analysis 为空! data:', JSON.stringify(data).substring(0, 200));
                 }
             } else {
                 console.warn('[performAIAnalysis] 后端响应非 ok:', resp.status);
@@ -1444,8 +1447,11 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingElement.classList.add('hidden');
         resultElement.classList.remove('hidden');
 
+        console.log('[DEBUG Rendering to DOM] analysis 变量:', analysis ? `长度 ${analysis.length} | 前80字符: ${analysis.substring(0, 80)}` : '【NULL / EMPTY】');
+        console.log('[DEBUG Rendering to DOM] resultElement 当前 classList:', resultElement.className);
         if (analysis) {
             resultElement.innerHTML = analysis;
+            console.log('[DEBUG Rendering to DOM] innerHTML 已设置，resultElement.innerHTML 前80字符:', resultElement.innerHTML.substring(0, 80));
             resultElement.classList.add('analysis-fade-in');
             resultElement.classList.remove('visible');
             requestAnimationFrame(() => { resultElement.classList.add('visible'); });
@@ -2772,9 +2778,12 @@ window.regenerateAnalysis = async function() {
             });
             if (resp.ok) {
                 const data = await resp.json();
+                console.log('[DEBUG regenerate Frontend received] success:', data.success, '| source:', data.source, '| analysis length:', data.analysis?.length, '| 前50字符:', data.analysis?.substring(0, 50));
                 if (data.success && data.analysis) {
                     analysis = data.analysis;
                     console.log('[regenerateAnalysis] 后端返回成功');
+                } else {
+                    console.warn('[DEBUG regenerate] data 异常:', JSON.stringify(data).substring(0, 200));
                 }
             }
         } catch (e) {
@@ -2788,6 +2797,7 @@ window.regenerateAnalysis = async function() {
 
         if (!analysis) throw new Error('解卦服务暂时不可用');
 
+        console.log('[DEBUG regenerate Rendering to DOM] analysis 长度:', analysis.length, '| 前80字符:', analysis.substring(0, 80));
         // 显示结果
         loadingDiv.classList.add('hidden');
         resultDiv.classList.remove('hidden');

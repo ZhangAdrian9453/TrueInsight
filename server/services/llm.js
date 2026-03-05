@@ -303,16 +303,20 @@ class LLMService {
     }
 
     async analyze(question, originalName, changedName, lang = 'zh', lineDetails = [], lunarDate = '', xuankong = '', dayGan = '', monthZhi = '', paipan = null) {
+        console.log('[DEBUG analyze] provider:', this.provider, '| hasKey:', !!this.apiKey, '| lang:', lang);
         if (this.provider === 'qianwen' && this.apiKey) {
             return this.callQianwen(question, originalName, changedName, lang, lineDetails, lunarDate, xuankong, dayGan, monthZhi, paipan);
         }
+        console.log('[DEBUG analyze] 走 localAnalysis（未配置 qianwen）');
         return this.localAnalysis(question, originalName, changedName);
     }
 
     localAnalysis(question, originalName, changedName) {
         const logic = loadDivinationLogic();
         const analysis = logic.generateAnalysis(question, originalName, changedName);
-        return { success: true, source: 'local', analysis };
+        const result = { success: true, source: 'local', analysis };
+        console.log('[DEBUG localAnalysis] 返回 HTML 长度:', analysis?.length, '| 前50字符:', analysis?.substring(0, 50));
+        return result;
     }
 
     async callQianwen(question, originalName, changedName, lang = 'zh', lineDetails = [], lunarDate = '', xuankong = '', dayGan = '', monthZhi = '', paipan = null) {
@@ -345,16 +349,18 @@ class LLMService {
 
             const data = await response.json();
             const content = data.choices?.[0]?.message?.content || '';
+            console.log('[DEBUG callQianwen] 千问原始回复长度:', content.length, '| 前100字符:', content.substring(0, 100));
 
             if (!content) {
+                console.warn('[DEBUG callQianwen] 千问返回空内容，降级 localAnalysis');
                 return this.localAnalysis(question, originalName, changedName);
             }
 
-            return {
-                success: true,
-                source: 'qianwen',
-                analysis: _parseToHTML(content)
-            };
+            const html = _parseToHTML(content);
+            console.log('[DEBUG callQianwen] _parseToHTML 结果长度:', html.length, '| 前100字符:', html.substring(0, 100));
+            const result = { success: true, source: 'qianwen', analysis: html };
+            console.log('[DEBUG Backend sending] success:', result.success, '| analysis length:', result.analysis?.length);
+            return result;
         } catch (error) {
             console.error('千问 API 调用失败:', error.message);
             return this.localAnalysis(question, originalName, changedName);
